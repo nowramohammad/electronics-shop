@@ -1,9 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, CartItem
+from .models import Product, CartItem, Order, Cart
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
-
+from django.http import HttpResponse
 from django.http import FileResponse, Http404
 from django.conf import settings
 import os
@@ -34,11 +35,41 @@ def signup(request):
     else:
         form = UserCreationForm()
     return render(request, 'shop/signup.html', {'form': form})
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('home')
+        else:
+            # Invalid login
+            return render(request, 'login.html', {'error': 'Invalid login credentials'})
+    return render(request, 'login.html')
 
+def logout_view(request):
+    logout(request)
+    return redirect('home')
 #this in for the home page
-def index(request):
+def home(request):
     products  = Product.objects.all()
-    return render(request, 'shop/index.html', {'products': products})
+    return render(request, 'shop/home.html', {'products': products})
+#add to cart path
+def add_to_cart(request, product_id):
+    product = Product.objects.get(id=product_id)
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    
+    cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
+    
+    return redirect('cart')
+# creat the order path 
+def create_order(request):
+    # You can implement order creation logic here
+    return HttpResponse("Order creation page")
 
 #the detail prouduct page 
 def product_detail(request, id):
@@ -53,14 +84,6 @@ def cart(request):
     return render(request, 'shop/cart.html', {'cart_items': cart_items, 'total_price': total_price})
 
 # when adding product to cart
-@login_required
-def add_to_cart(request, id):
-    product = get_object_or_404(Product, id=id)
-    cart_item, created = CartItem.objects.get_or_create(user=request.user, product=product)
-    if not created:
-        cart_item.quantity += 1
-        cart_item.save()
-    return redirect('cart')
 
 # at the removal product from cart
 @login_required
@@ -69,3 +92,16 @@ def remove_from_cart(request, id):
     cart_item.delete()
     return redirect('cart')
 
+@login_required
+def view_cart(request):
+    order = Order.objects.filter(user=request.user, completed=False).first()
+    return render(request, 'shop/cart.html', {'order': order})
+@login_required
+def checkout(request):
+    cart = Cart.objects.get(user=request.user)
+    total_price = sum(item.product.price * item.quantity for item in cart.cartitem_set.all())
+    order = Order.objects.create(user=request.user, total_price=total_price)
+    order.products.set([item.product for item in cart.cartitem_set.all()])
+    order.save()
+    cart.cartitem_set.all().delete()  # Clear the cart
+    return render(request, 'checkout.html', {'order': order})
