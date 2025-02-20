@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from django.http import FileResponse, Http404
 from django.conf import settings
 import os
+from django.db import models
 
 def download_image(request, product_id):
     try:
@@ -66,6 +67,7 @@ def add_to_cart(request, product_id):
         cart_item.save()
     
     return redirect('cart')
+
 # creat the order path 
 def create_order(request):
     # You can implement order creation logic here
@@ -79,9 +81,18 @@ def product_detail(request, id):
 #cart page when login
 @login_required
 def cart(request):
-    cart_items = CartItem.objects.filter(user=request.user)
-    total_price = sum(item.product.price * item.quantity for item in cart_items)
-    return render(request, 'shop/cart.html', {'cart_items': cart_items, 'total_price': total_price})
+    # Get the cart for the logged-in user
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    
+    # Filter CartItem objects based on the cart
+    cart_items = CartItem.objects.filter(cart=cart)
+    cart_items = CartItem.objects.all()
+    # Calculate the total price for each item
+    for item in cart_items:
+        item.total_price = item.product.price * item.quantity
+    # Render the cart template with the cart items
+    return render(request, 'shop/cart.html', {'cart_items': cart_items})
+
 
 # when adding product to cart
 
