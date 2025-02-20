@@ -128,6 +128,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'shop/static')]
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'index'
 
+AUTH_USER_MODEL = 'accounts.CustomUser'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

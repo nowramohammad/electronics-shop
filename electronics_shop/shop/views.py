@@ -58,41 +58,7 @@ def logout_view(request):
 def home(request):
     products  = Product.objects.all()
     return render(request, 'shop/home.html', {'products': products})
-#add to cart path
-def add_to_cart(request, product_id):
-    # Check if the product exists
-    product = get_object_or_404(Product, id=product_id)
 
-    if request.user.is_authenticated:
-        # If the user is authenticated
-        cart, created = Cart.objects.get_or_create(user=request.user)
-    else:
-        # If the user is not authenticated, we can use session to store cart info temporarily
-        cart_id = request.session.get('cart_id')
-        if cart_id:
-            cart = Cart.objects.get(id=cart_id)
-        else:
-            cart = Cart.objects.create()
-            request.session['cart_id'] = cart.id  # Store the cart id in the session
-
-    # Now let's add the product to the cart
-    # Check if the product already exists in the cart
-    cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-
-    if not created:
-        # If the product already exists, just increment the quantity
-        cart_item.quantity += 1
-        cart_item.save()
-    else:
-        # If it's a new product, set quantity to 1
-        cart_item.quantity = 1
-        cart_item.save()
-
-    # Optionally, show a success message to the user
-    messages.success(request, f'{product.name} has been added to your cart.')
-
-    # Redirect the user to the cart page or wherever you want
-    return HttpResponseRedirect(reverse('cart_view'))
 
 # creat the order path 
 def create_order(request):
@@ -100,29 +66,69 @@ def create_order(request):
     return HttpResponse("Order creation page")
 
 #the detail prouduct page 
-def product_detail(request, id):
-    product = get_object_or_404(Product, id=id)
-    return render(request, 'shop/product_detail.html', {'product': product})
+def product_list(request):
+    products = Product.objects.all()
+    return render(request, 'shop/product_list.html', {'products': products})
 
+def product_detail(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    return render(request, 'shop/product_detail.html', {'product': product})
 #cart page when login
 @login_required
 def cart(request):
-    # Get the cart for the logged-in user
-    cart, created = Cart.objects.get_or_create(user=request.user)
-    
-    # Filter CartItem objects based on the cart
-    cart_items = CartItem.objects.filter(cart=cart)
-    
-    # Calculate the total price for each item
+    # Debug: Print the current user
+    print(f"Fetching cart for user: {request.user.username} (ID: {request.user.id})")
+
+    # Get the user's cart
+    cart = get_object_or_404(Cart, user=request.user)
+    print(f"Cart ID: {cart.id}")  # Debugging
+
+    # Fetch the cart items
+    cart_items = cart.cartitem_set.all()
+    print(f"Number of cart items: {cart_items.count()}")  # Debugging
+
+    # Print each cart item
     for item in cart_items:
-        item.total_price = item.product.price * item.quantity
-    
-    # Render the cart template with the cart items
-    return render(request, 'shop/cart.html', {'cart_items': cart_items})
+        print(f"Cart Item: {item.product.name} (Quantity: {item.quantity})")
+
+    # Calculate the total price for the entire cart
+    total_cart_price = sum(item.total_price for item in cart_items)
+    print(f"Total cart price: {total_cart_price}")  # Debugging
+
+    return render(request, 'cart.html', {
+        'cart_items': cart_items,
+        'total_cart_price': total_cart_price,
+    })
 
 
 # when adding product to cart
+@login_required
+def add_to_cart(request, product_id):
+    # Debug: Print the product ID being added
+    print(f"Adding product with ID: {product_id} to cart")
 
+    # Get the product
+    product = get_object_or_404(Product, id=product_id)
+    print(f"Product: {product.name} (ID: {product.id})")  # Debugging
+
+    # Get or create the user's cart
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    print(f"Cart ID: {cart.id}, Created: {created}")  # Debugging
+
+    # Get or create the cart item
+    cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+    print(f"Cart Item ID: {cart_item.id}, Created: {created}")  # Debugging
+
+    # If the item already exists, increase the quantity
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
+        print(f"Updated quantity: {cart_item.quantity}")  # Debugging
+    else:
+        print(f"New item added to cart")  # Debugging
+
+    # Redirect to the cart page or home page
+    return redirect('cart') 
 # at the removal product from cart
 @login_required
 def remove_from_cart(request, id):
