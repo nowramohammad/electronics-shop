@@ -7,23 +7,18 @@
 
 {% block content %}
   <h1>Welcome to Electronics Shop</h1>
-  
-  <div class="products">
+  <div>
     {% for product in products %}
-    <div class="product">
-        <img src="{{ product.image.url }}" alt="{{ product.name }}" width="200" height="200">
-        <h3>{{ product.name }}</h3>
-        <p>${{ product.price }}</p>
-        <button class="add-to-cart" data-product-id="{{ product.id }}">Add to Cart</button>
-        <script>
-            function addToCart(productId) {
-                fetch(`/add_to_cart/${productId}/`)
-                    .then(response => response.json())
-                    .then(data => alert(data.message))
-                    .catch(error => console.error('Error:', error));
-            }
-            </script>
-    </div>
+        <div class="product">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" width="150">
+            <h3>{{ product.name }}</h3>
+            <p>{{ product.description }}</p>
+            <p>Price: ${{ product.price }}</p>
+            <form action="{% url 'add_to_cart' product.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Add to Cart</button>
+            </form>
+        </div>
     {% endfor %}
 </div>
 {% endblock %}

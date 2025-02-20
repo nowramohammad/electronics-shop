@@ -4,11 +4,13 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.http import FileResponse, Http404
 from django.conf import settings
 import os
 from django.db import models
+from django.urls import reverse
+from django.contrib import messages
 
 def download_image(request, product_id):
     try:
@@ -58,15 +60,39 @@ def home(request):
     return render(request, 'shop/home.html', {'products': products})
 #add to cart path
 def add_to_cart(request, product_id):
-    product = Product.objects.get(id=product_id)
-    cart, created = Cart.objects.get_or_create(user=request.user)
-    
+    # Check if the product exists
+    product = get_object_or_404(Product, id=product_id)
+
+    if request.user.is_authenticated:
+        # If the user is authenticated
+        cart, created = Cart.objects.get_or_create(user=request.user)
+    else:
+        # If the user is not authenticated, we can use session to store cart info temporarily
+        cart_id = request.session.get('cart_id')
+        if cart_id:
+            cart = Cart.objects.get(id=cart_id)
+        else:
+            cart = Cart.objects.create()
+            request.session['cart_id'] = cart.id  # Store the cart id in the session
+
+    # Now let's add the product to the cart
+    # Check if the product already exists in the cart
     cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+
     if not created:
+        # If the product already exists, just increment the quantity
         cart_item.quantity += 1
         cart_item.save()
-    
-    return redirect('cart')
+    else:
+        # If it's a new product, set quantity to 1
+        cart_item.quantity = 1
+        cart_item.save()
+
+    # Optionally, show a success message to the user
+    messages.success(request, f'{product.name} has been added to your cart.')
+
+    # Redirect the user to the cart page or wherever you want
+    return HttpResponseRedirect(reverse('cart_view'))
 
 # creat the order path 
 def create_order(request):
