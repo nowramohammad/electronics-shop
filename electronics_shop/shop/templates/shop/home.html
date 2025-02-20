@@ -1,20 +1,28 @@
 <!-- templates/shop/index.html -->
 {% extends 'base.html' %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+{% endblock %}
 
 {% block content %}
   <h1>Welcome to Electronics Shop</h1>
-  <p>Browse our selection of electronics:</p>
-  <div class="row">
+  
+  <div class="products">
     {% for product in products %}
-    <div class="col-md-4">
-        <div class="card">
-            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
-            <div class="card-body">
-                <h5 class="card-title">{{ product.name }}</h5>
-                <p class="card-text">${{ product.price }}</p>
-                <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary">Add to Cart</a>
-            </div>
-        </div>
+    <div class="product">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" width="200" height="200">
+        <h3>{{ product.name }}</h3>
+        <p>${{ product.price }}</p>
+        <button class="add-to-cart" data-product-id="{{ product.id }}">Add to Cart</button>
+        <script>
+            function addToCart(productId) {
+                fetch(`/add_to_cart/${productId}/`)
+                    .then(response => response.json())
+                    .then(data => alert(data.message))
+                    .catch(error => console.error('Error:', error));
+            }
+            </script>
     </div>
     {% endfor %}
 </div>

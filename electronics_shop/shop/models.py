@@ -31,6 +31,10 @@ class CartItem(models.Model):
     def __str__(self):
         return f"{self.quantity} x {self.product.name} in cart {self.cart.id}"
 
+    @property
+    def total_price(self):
+        return self.product.price * self.quantity
+
 
 
 class Order(models.Model):

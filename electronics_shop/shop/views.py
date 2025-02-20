@@ -86,10 +86,11 @@ def cart(request):
     
     # Filter CartItem objects based on the cart
     cart_items = CartItem.objects.filter(cart=cart)
-    cart_items = CartItem.objects.all()
+    
     # Calculate the total price for each item
     for item in cart_items:
         item.total_price = item.product.price * item.quantity
+    
     # Render the cart template with the cart items
     return render(request, 'shop/cart.html', {'cart_items': cart_items})
 
