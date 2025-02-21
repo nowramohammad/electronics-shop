@@ -1,6 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def create_user_cart(sender, instance, created, **kwargs):
+    if created:
+        Cart.objects.create(user=instance)
 
 
 class Category(models.Model):
@@ -22,18 +29,27 @@ class Product(models.Model):
 
 
 class Cart(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, default= None)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
+    products = models.ManyToManyField(Product, through='CartItem')
+    #product = models.ForeignKey(Product, on_delete=models.CASCADE, default= None)
     quantity = models.PositiveIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.user.username}'s cart"
+        return f"Cart for {self.user.username}"
+    def total_price(self):
+        return sum(item.total_price for item in self.cartitem_set.all())
+       # return f"{self.user.username}'s cart"
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
-
+    
+    @property
+    def product_id(self):
+        return self.product.id
     @property
     def total_price(self):
         return self.product.price * self.quantity

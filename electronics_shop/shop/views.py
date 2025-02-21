@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, CartItem, Order, Cart
+from .models import Product, CartItem, Order, Cart, OrderItem
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
@@ -114,35 +114,54 @@ def add_to_cart(request, product_id):
         cart_item.quantity += 1
         cart_item.save()
     
-    return redirect('cart') 
-
-    # If the item already exists, increase the quantity
-    if not created:
-        cart_item.quantity += 1
-        cart_item.save()
-        print(f"Updated quantity: {cart_item.quantity}")  # Debugging
-    else:
-        print(f"New item added to cart")  # Debugging
-
-    # Redirect to the cart page or home page
-    return redirect('cart') 
+    return redirect('cart')  
 # at the removal product from cart
 @login_required
-def remove_from_cart(request, id):
-    cart_item = get_object_or_404(CartItem, id=id, user=request.user)
+def remove_from_cart(request, product_id):
+    cart = get_object_or_404(Cart, user=request.user)
+    cart_item = get_object_or_404(CartItem, cart=cart, product__id=product_id)
+    
     cart_item.delete()
     return redirect('cart')
 
 @login_required
 def view_cart(request):
-    order = Order.objects.filter(user=request.user, completed=False).first()
-    return render(request, 'shop/cart.html', {'order': order})
+    cart = request.user.cart
+    cart_items = cart.cartitem_set.all()
+    
+    
+    total_price = sum(item.product.price * item.quantity for item in cart_items)
+    
+    return render(request, 'shop/cart.html', {
+        'cart_items': cart_items,
+        'total_price': total_price,  # Pass the total price to the template
+    })
+
 @login_required
 def checkout(request):
-    cart = Cart.objects.get(user=request.user)
-    total_price = sum(item.product.price * item.quantity for item in cart.cartitem_set.all())
-    order = Order.objects.create(user=request.user, total_price=total_price)
-    order.products.set([item.product for item in cart.cartitem_set.all()])
-    order.save()
-    cart.cartitem_set.all().delete()  # Clear the cart
-    return render(request, 'checkout.html', {'order': order})
+    try:
+        cart = request.user.cart  # Make sure the user has a cart
+    except Cart.DoesNotExist:
+        return redirect('cart')  # If there's no cart, redirect to the cart page
+
+    cart_items = cart.cartitem_set.all()  # This should work if cart is correctly loaded
+
+    if not cart_items:
+        return redirect('cart')  # If the cart is empty, redirect to the cart page
+
+    # Create an order
+    order = Order.objects.create(user=request.user, total_price=cart.total_price())
+
+    # Move cart items to order items
+    for cart_item in cart_items:
+        OrderItem.objects.create(
+            order=order,
+            product=cart_item.product,
+            quantity=cart_item.quantity,
+            price=cart_item.product.price
+        )
+
+    # Clear the cart
+    cart_items.delete()  # Delete the items from the cart
+
+    return render(request, 'shop/checkout.html', {'order': order})
