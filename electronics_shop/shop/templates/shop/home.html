@@ -1,24 +1,29 @@
 <!-- templates/shop/index.html -->
-{% extends 'base.html' %}
+{% extends 'shop/base.html' %}
 {% load static %}
-{% block head %}
-<link rel="stylesheet" href="{% static 'css/styles.css' %}">
-{% endblock %}
-
 {% block content %}
-  <h1>Welcome to Electronics Shop</h1>
-  <div>
-    {% for product in products %}
-        <div class="product">
-            <img src="{{ product.image.url }}" alt="{{ product.name }}" width="150">
-            <h3>{{ product.name }}</h3>
-            <p>{{ product.description }}</p>
-            <p>Price: ${{ product.price }}</p>
-            <form action="{% url 'add_to_cart' product.id %}" method="post">
-                {% csrf_token %}
-                <button type="submit">Add to Cart</button>
-            </form>
-        </div>
+  <h1>Welcome to Our Electronic Shop!</h1>
+  <p>Your one-stop destination for the latest electronics and gadgets.</p>
+
+  <h2>Featured Products</h2>
+  <div class="featured-products">
+    {% for product in featured_products %}
+      <div class="product">
+        <h3><a href="{% url 'product_detail' product.pk %}">{{ product.name }}</a></h3>
+        <p>{{ product.description|truncatewords:20 }}</p>
+        <p>Price: ${{ product.price }}</p>
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" width="150">
+      </div>
+    {% empty %}
+      <p>No featured products available at the moment.</p>
     {% endfor %}
-</div>
+  </div>
+
+  <div class="auth-links">
+    {% if user.is_authenticated %}
+      <p>Welcome, {{ user.username }}! <a href="{% url 'logout' %}">Logout</a></p>
+    {% else %}
+      <p><a href="{% url 'login' %}">Login</a> or <a href="{% url 'signup' %}">Sign Up</a> to start shopping!</p>
+    {% endif %}
+  </div>
 {% endblock %}

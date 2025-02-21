@@ -56,8 +56,8 @@ def logout_view(request):
     return redirect('home')
 #this in for the home page
 def home(request):
-    products  = Product.objects.all()
-    return render(request, 'shop/home.html', {'products': products})
+    featured_products = Product.objects.filter(featured=True)[:5]  
+    return render(request, 'shop/home.html', {'featured_products': featured_products})
 
 
 # creat the order path 
@@ -104,20 +104,17 @@ def cart(request):
 # when adding product to cart
 @login_required
 def add_to_cart(request, product_id):
-    # Debug: Print the product ID being added
-    print(f"Adding product with ID: {product_id} to cart")
-
-    # Get the product
     product = get_object_or_404(Product, id=product_id)
-    print(f"Product: {product.name} (ID: {product.id})")  # Debugging
-
-    # Get or create the user's cart
     cart, created = Cart.objects.get_or_create(user=request.user)
-    print(f"Cart ID: {cart.id}, Created: {created}")  # Debugging
-
-    # Get or create the cart item
+    
+    # Check if the product is already in the cart
     cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-    print(f"Cart Item ID: {cart_item.id}, Created: {created}")  # Debugging
+    
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
+    
+    return redirect('cart') 
 
     # If the item already exists, increase the quantity
     if not created:
