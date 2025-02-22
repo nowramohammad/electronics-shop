@@ -2,16 +2,21 @@
 {% extends 'shop/base.html' %}
 
 {% block content %}
-  <h1>{{ product.name }}</h1>
-  <img src="{{ product.image.url }}" alt="{{ product.name }}">
-  <p>{{ product.description }}</p>
-  <p>Price: ${{ product.price }}</p>
-  <a href="{% url 'download_image' product.id %}">Download Image</a>
-  <!-- Add to cart form -->
-  <form action="{% url 'add_to_cart' product.id %}" method="POST">
-    {% csrf_token %}
-    <button type="submit">Add to Cart</button>
-  </form>
-  
-  <a href="{% url 'home' %}">Back to products</a>
+<div class="product-detail">
+    <div class="product-image">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+    </div>
+    <div class="product-info">
+        <h2>{{ product.name }}</h2>
+        <p class="product-price">Price: ${{ product.price }}</p>
+        <p class="product-description">{{ product.description }}</p>
+        <a href="{% url 'download_image' product.id %}" class="btn-download">Download Image</a>
+        <!-- Add to cart form -->
+        <form action="{% url 'add_to_cart' product.id %}" method="POST" class="add-to-cart-form">
+            {% csrf_token %}
+            <button type="submit" class="btn-buy">Add to Cart</button>
+        </form>
+        <a href="{% url 'home' %}" class="btn-back">Back to Products</a>
+    </div>
+</div>
 {% endblock %}

@@ -1,0 +1,93 @@
+/* shop/static/shop/css/styles.css */
+body {
+    background-image: url('/static/shop/images/background.jpg'); 
+    background-size: cover; 
+    background-position: center center; 
+    background-attachment: fixed; 
+    font-family: Arial, sans-serif; 
+    margin: 0;
+    padding: 0;
+}
+.product-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Creates responsive columns */
+    gap: 20px; /* Space between grid items */
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent background for product area */
+    border-radius: 10px;
+    margin: 20px;
+}
+
+/* Style each product card */
+.product-card {
+    background-color: #ffffff; /* White background for product card */
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for the card */
+    text-align: center;
+    transition: transform 0.3s ease-in-out; /* Animation for hover effect */
+}
+
+.product-card:hover {
+    transform: translateY(-10px); /* Lift the card when hovered */
+}
+
+/* Style for product image */
+.product-card img {
+    width: 100%; /* Image takes up the full width */
+    height: auto;
+    border-radius: 5px;
+}
+
+/* Product name styling */
+.product-card h3 {
+    color: #333333; /* Dark text color for the product name */
+    font-size: 1.2em;
+    margin-top: 15px;
+}
+
+/* Style for product price */
+.product-card .price {
+    color: #ff6600; /* Price in orange */
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+/* Add a "Buy Now" button */
+.product-card .btn-buy {
+    background-color: #00cc66; /* Green color for the button */
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    display: inline-block;
+    margin-top: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.product-card .btn-buy:hover {
+    background-color: #00994d; /* Darker green when hovered */
+}
+
+header {
+    background-color: #ff6600; 
+    padding: 20px;
+    text-align: center;
+    color: white;
+}
+
+
+
+
+@media (max-width: 768px) {
+    .product-container {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .product-container {
+        grid-template-columns: 1fr; /* Single column layout on smaller screens */
+    }
+}

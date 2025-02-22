@@ -84,7 +84,7 @@ def cart(request):
     print(f"Cart ID: {cart.id}")  # Debugging
 
     # Fetch the cart items
-    cart_items = cart.cartitem_set.all()
+    cart_items = cart.cart_items.all()
     print(f"Number of cart items: {cart_items.count()}")  # Debugging
 
     # Print each cart item
@@ -139,27 +139,27 @@ def view_cart(request):
 
 @login_required
 def checkout(request):
-    try:
-        cart = request.user.cart  # Make sure the user has a cart
-    except Cart.DoesNotExist:
-        return redirect('cart')  # If there's no cart, redirect to the cart page
-
-    cart_items = cart.cartitem_set.all()  # This should work if cart is correctly loaded
+    cart = getattr(request.user, 'cart', None)  # Get the cart for the user
+    
+    if not cart:
+        # If no cart exists for the user, create one
+        cart = Cart.objects.create(user=request.user)
+    cart = Cart.objects.get(user=request.user)
+    cart_items = cart.cart_items.all()  
 
     if not cart_items:
         return redirect('cart')  # If the cart is empty, redirect to the cart page
 
-    # Create an order
     order = Order.objects.create(user=request.user, total_price=cart.total_price())
 
     # Move cart items to order items
-    for cart_item in cart_items:
+    for cart_item in cart.cart_items.all():
         OrderItem.objects.create(
             order=order,
             product=cart_item.product,
             quantity=cart_item.quantity,
-            price=cart_item.product.price
-        )
+            price=cart_item.product.price  # Ensure that this is a valid field
+    )
 
     # Clear the cart
     cart_items.delete()  # Delete the items from the cart

@@ -1,10 +1,15 @@
 {% extends 'shop/base.html' %}
+
 {% block content %}
-<h2>Login</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Login</button>
-</form>
-<p>Creat an Account <a href="{% url 'signup' %}">Sign Up</a></p>
+<div class="auth-page">
+    <div class="auth-form">
+        <h2>Log In</h2>
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn-auth">Log In</button>
+        </form>
+        <p>Don't have an account? <a href="{% url 'signup' %}" class="auth-link">Sign Up</a></p>
+    </div>
+</div>
 {% endblock %}
