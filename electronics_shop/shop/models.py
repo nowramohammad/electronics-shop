@@ -23,7 +23,7 @@ class Product(models.Model):
     #category = models.ForeignKey(Category, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='products/', null=True, blank=True)
     featured = models.BooleanField(default=False)  # Add this line
-
+    category = models.CharField(max_length=50, blank=True, null=True)
     def __str__(self):
         return self.name
 
@@ -81,3 +81,14 @@ class OrderItem(models.Model):
     @property
     def total_price(self):
         return self.price * self.quantity
+
+
+class Feedback(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    feedback_text = models.TextField()
+    file = models.FileField(upload_to='feedback_files/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback by {self.user.username} on {self.product.name}"

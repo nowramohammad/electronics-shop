@@ -19,4 +19,35 @@
         <a href="{% url 'home' %}" class="btn-back">Back to Products</a>
     </div>
 </div>
+<div class="feedback-section">
+    <h3>Feedback</h3>
+    {% if feedbacks %}
+        <ul class="feedback-list">
+            {% for feedback in feedbacks %}
+                <li class="feedback-item">
+                    <p class="feedback-text">{{ feedback.feedback_text }}</p>
+                    {% if feedback.file %}
+                        <p class="feedback-file">
+                            <a href="{{ feedback.file.url }}" target="_blank">Download attached file</a>
+                        </p>
+                    {% endif %}
+                    <p class="feedback-meta">
+                        By: <strong>{{ feedback.user.username }}</strong> on {{ feedback.created_at }}
+                    </p>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="no-feedback">No feedback yet.</p>
+    {% endif %}
+
+   
+    {% if user.is_authenticated %}
+        <a href="{% url 'add_feedback' product.id %}" class="btn-add-feedback">Add Feedback</a>
+    {% else %}
+        <p class="login-prompt">
+            <a href="{% url 'login' %}">Log in</a> to add feedback.
+        </p>
+    {% endif %}
+</div>
 {% endblock %}

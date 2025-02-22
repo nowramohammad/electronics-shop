@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, CartItem, Order, Cart, OrderItem
+from .models import Product, CartItem, Order, Cart, OrderItem, Feedback
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
@@ -11,6 +11,7 @@ import os
 from django.db import models
 from django.urls import reverse
 from django.contrib import messages
+from .forms import FeedbackForm
 
 def download_image(request, product_id):
     try:
@@ -72,7 +73,12 @@ def product_list(request):
 
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
-    return render(request, 'shop/product_detail.html', {'product': product})
+    feedbacks = Feedback.objects.filter(product=product)
+
+    return render(request, 'shop/product_detail.html', 
+        {'product': product, 
+         'feedbacks': feedbacks, 
+         })
 #cart page when login
 @login_required
 def cart(request):
@@ -81,7 +87,7 @@ def cart(request):
 
     # Get the user's cart
     cart = get_object_or_404(Cart, user=request.user)
-    print(f"Cart ID: {cart.id}")  # Debugging
+    print(f"Cart ID: {cart.id}")  
 
     # Fetch the cart items
     cart_items = cart.cart_items.all()
@@ -92,8 +98,8 @@ def cart(request):
         print(f"Cart Item: {item.product.name} (Quantity: {item.quantity})")
 
     # Calculate the total price for the entire cart
-    total_cart_price = sum(item.total_price for item in cart_items)
-    print(f"Total cart price: {total_cart_price}")  # Debugging
+    total_cart_price = sum(item.product.price * item.quantity for item in cart_items)
+    print(f"Total cart price: {total_cart_price}")  
 
     return render(request, 'cart.html', {
         'cart_items': cart_items,
@@ -139,18 +145,18 @@ def view_cart(request):
 
 @login_required
 def checkout(request):
-    cart = getattr(request.user, 'cart', None)  # Get the cart for the user
+    cart = getattr(request.user, 'cart', None)  
     
     if not cart:
-        # If no cart exists for the user, create one
+        
         cart = Cart.objects.create(user=request.user)
     cart = Cart.objects.get(user=request.user)
     cart_items = cart.cart_items.all()  
 
     if not cart_items:
-        return redirect('cart')  # If the cart is empty, redirect to the cart page
-
-    order = Order.objects.create(user=request.user, total_price=cart.total_price())
+        return redirect('cart')  
+    total_cart_price = sum(item.product.price * item.quantity for item in cart_items)
+    order = Order.objects.create(user=request.user, total_price=total_cart_price)
 
     # Move cart items to order items
     for cart_item in cart.cart_items.all():
@@ -158,10 +164,36 @@ def checkout(request):
             order=order,
             product=cart_item.product,
             quantity=cart_item.quantity,
-            price=cart_item.product.price  # Ensure that this is a valid field
+            price=cart_item.product.price  
     )
 
     # Clear the cart
-    cart_items.delete()  # Delete the items from the cart
+    cart_items.delete()  
 
-    return render(request, 'shop/checkout.html', {'order': order})
+    return render(request, 'shop/checkout.html', {
+        'order': order,
+        'total_cart_price': total_cart_price, 
+        'cart_items': cart_items, 
+    })
+
+
+@login_required
+def add_feedback(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST, request.FILES)
+        if form.is_valid():
+            feedback = form.save(commit=False)
+            feedback.user = request.user
+            feedback.product = product
+            feedback.save()
+            messages.success(request, 'Thank you for your feedback!')
+            return redirect('product_detail', pk=product.id)
+    else:
+        form = FeedbackForm()
+    
+    return render(request, 'shop/add_feedback.html', {
+        'form': form,
+        'product': product,
+    })

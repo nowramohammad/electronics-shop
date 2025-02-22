@@ -8,9 +8,9 @@
         {% for item in cart_items %}
         <div class="cart-item">
             <div class="item-info">
-                <h3>{{ item.product.name }}</h3>
-                <p>Quantity: {{ item.quantity }}</p>
-                <p>Price: ${{ item.product.price }}</p>
+                <li>
+                    {{ item.product.name }} - Quantity: {{ item.quantity }} - Price: ${{ item.product.price }}
+                </li>
             </div>
             <form action="{% url 'remove_from_cart' item.product.id %}" method="post" class="remove-form">
                 {% csrf_token %}
@@ -20,7 +20,7 @@
         {% endfor %}
     </div>
     <div class="cart-summary">
-        <p class="total-price">Total Price: ${{ total_price }}</p>
+        <p class="total-price">Total Price: ${{ total_cart_price }}</p>
         <a href="{% url 'checkout' %}" class="btn-checkout">Proceed to Checkout</a>
     </div>
     {% else %}

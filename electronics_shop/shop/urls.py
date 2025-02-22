@@ -14,7 +14,7 @@ urlpatterns = [
     #for the auth login logout path
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('cart/remove/<int:product_id>/', views.remove_from_cart, name='remove_from_cart'),
-
+    path('product/<int:product_id>/add_feedback/', views.add_feedback, name='add_feedback'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('signup/', views.signup, name='signup'),
     path('product/<int:product_id>/download/', views.download_image, name='download_image'),
