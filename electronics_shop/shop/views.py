@@ -57,7 +57,7 @@ def logout_view(request):
     return redirect('home')
 #this in for the home page
 def home(request):
-    featured_products = Product.objects.filter(featured=True)[:5]  
+    featured_products = Product.objects.filter(featured=True)#[:5]  
     return render(request, 'shop/home.html', {'featured_products': featured_products})
 
 

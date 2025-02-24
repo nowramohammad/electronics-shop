@@ -11,6 +11,8 @@
 </head>
 <body>
     <header>
+        
+
         <h1>Electronic Shop</h1>
         <nav>
             <a href="{% url 'home' %}">Home</a>
@@ -29,8 +31,16 @@
         {% endblock %}
     </main>
 
-    <footer>
-        <p>&copy; 2025 Electronic Shop. All rights reserved.</p>
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Electronic Shop. All rights reserved.</p>
+            <p>Follow us on:
+                <a href="https://twitter.com" target="_blank">Twitter</a> |
+                <a href="https://facebook.com" target="_blank">Facebook</a> |
+                <a href="https://instagram.com" target="_blank">Instagram</a>
+            </p>
+        </div>
     </footer>
+
 </body>
 </html>

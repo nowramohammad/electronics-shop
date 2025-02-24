@@ -160,7 +160,7 @@ header {
     color: #444;
 }
 .auth-page {
-    background-image: url('/static/shop/images/WW.jpeg');
+    background-image: url('/static/shop/images/LOGOshop.jpg');
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;
@@ -560,7 +560,7 @@ header {
 }
 
 .feedback-file a {
-    color: #007bff;
+    color: #ffaa0d;
     text-decoration: none;
 }
 
@@ -590,7 +590,7 @@ header {
 }
 
 .btn-add-feedback:hover {
-    background-color: #0056b3;
+    background-color: #ea910a;
 }
 
 .login-prompt {
@@ -606,4 +606,31 @@ header {
 
 .login-prompt a:hover {
     text-decoration: underline;
+}
+.site-footer {
+    background-color: #333; /* Dark background color */
+    color: #fff; /* White text color */
+    padding: 20px 0;
+    text-align: center;
+    margin-top: auto; /* Ensures footer sticks to the bottom */
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.site-footer a {
+    color: #ffcc00; /* Yellow color for links */
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+.site-footer a:hover {
+    text-decoration: underline;
+}
+
+.site-footer p {
+    margin: 5px 0;
 }
