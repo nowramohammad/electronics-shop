@@ -133,7 +133,7 @@ def remove_from_cart(request, product_id):
 @login_required
 def view_cart(request):
     cart = request.user.cart
-    cart_items = cart.cartitem_set.all()
+    cart_items = cart.cart_item.all()
     
     
     total_price = sum(item.product.price * item.quantity for item in cart_items)

@@ -27,7 +27,6 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-
 class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart')
     products = models.ManyToManyField(Product, through='CartItem')
@@ -39,7 +38,8 @@ class Cart(models.Model):
     def __str__(self):
         return f"Cart for {self.user.username}"
     def total_price(self):
-        return sum(item.total_price for item in self.cart_items.all())
+        return sum(item.total_price for item in self.products.all())
+
        # return f"{self.user.username}'s cart"
 
 class CartItem(models.Model):
@@ -57,7 +57,7 @@ class CartItem(models.Model):
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
     
-    
+
 
 
 

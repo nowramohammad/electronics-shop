@@ -101,10 +101,10 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'electronics_shop',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            #'NAME': BASE_DIR / 'db.sqlite3',
             #'NAME': 'electronics_shop'
-            'USER': 'your_database_user',
-            'PASSWORD': 'your_password',
+            #'USER': 'your_database_user',
+            #'PASSWORD': 'your_password',
     
         }
     }
