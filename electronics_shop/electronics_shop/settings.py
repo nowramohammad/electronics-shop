@@ -11,7 +11,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import dj_database_url
 import os
+import dj_database_url
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,12 +26,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-2_3!qed)-xkp*s$%1=xjtrzhm4srpzx!@b^oask%a(8xjljw-9'
+
+#SECRET_KEY = 'django-insecure-2_3!qed)-xkp*s$%1=xjtrzhm4srpzx!@b^oask%a(8xjljw-9'
+SECRET_KEY = os.getenv('SECRET_KEY')
+
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if not 'ON_HEROKU' in os.environ:
 
-ALLOWED_HOSTS = []
+   DEBUG = True
+
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -44,6 +55,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -75,16 +87,28 @@ WSGI_APPLICATION = 'electronics_shop.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        #'NAME': 'electronics_shop'
-        'USER': 'your_database_user',
-       'PASSWORD': 'your_password',
+if 'ON_HEROKU' in os.environ:
+    DATABASES = {
+        "default": dj_database_url.config(
+            env='DATABASE_URL',
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=True,
+        ),
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'electronics_shop',
+            'NAME': BASE_DIR / 'db.sqlite3',
+            #'NAME': 'electronics_shop'
+            'USER': 'your_database_user',
+            'PASSWORD': 'your_password',
+    
+        }
+    }
+
 
 
 # Password validation
